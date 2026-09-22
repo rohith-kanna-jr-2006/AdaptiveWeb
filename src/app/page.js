@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { AdaptiveStatus } from "@/components/AdaptiveStatus";
-import { ModeCard } from "@/components/ModeCard";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { DeviceStatus } from "@/components/DeviceStatus";
 import { PerformanceDashboard } from "@/components/PerformanceDashboard";
@@ -12,20 +11,24 @@ import { PerformanceComparison } from "@/components/PerformanceComparison";
 import { AdaptationExplanation } from "@/components/AdaptationExplanation";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { Footer } from "@/components/Footer";
-import { LoadingState, EmptyState, ErrorState } from "@/components/ui/States";
 
-import { AdaptiveShowcase } from "@/adaptive/components/AdaptiveShowcase/AdaptiveShowcase";
+import { PRODUCTS } from "@/data/products";
+import { CartProvider } from "@/context/CartContext";
+import { ProductList } from "@/components/ecommerce/ProductList";
+import { ProductDetailsModal } from "@/components/ecommerce/ProductDetailsModal";
+import { CartDrawer } from "@/components/ecommerce/CartDrawer";
+import { OptionalRecommendations } from "@/components/ecommerce/OptionalRecommendations";
+
 import { useAdaptive } from "@/hooks/useAdaptive";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { useDeviceStatus } from "@/hooks/useDeviceStatus";
 import { usePerformanceMetrics } from "@/hooks/usePerformanceMetrics";
-import { ADAPTIVE_MODES } from "@/adapters/adaptiveEngineAdapter";
-import { CANONICAL_MODES } from "@/adaptive/integration/adaptiveAdapter";
 
-export default function Home() {
-  const [activeSection, setActiveSection] = useState("hero");
+function MainAppContent() {
+  const [activeSection, setActiveSection] = useState("products");
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const { mode, rawMode, reason, isLoading: adaptiveLoading, error: adaptiveError } = useAdaptive();
+  const { activeMode, reason } = useAdaptive();
   const networkInfo = useNetworkStatus();
   const deviceInfo = useDeviceStatus();
   const { metrics, comparison } = usePerformanceMetrics();
@@ -38,82 +41,56 @@ export default function Home() {
     }
   };
 
-  // Convert canonical mode to legacy ADAPTIVE_MODES string for ModeCard compatibility
-  const legacyModeString =
-    mode === CANONICAL_MODES.DATA_SAVER
-      ? ADAPTIVE_MODES.DATA_SAVER
-      : mode === CANONICAL_MODES.FULL
-      ? ADAPTIVE_MODES.FULL_EXPERIENCE
-      : ADAPTIVE_MODES.BALANCED;
-
-  const policyStateSnapshot = {
-    mode: legacyModeString,
-    reason: reason || "Adaptive engine policy active",
-    imageQuality: mode === CANONICAL_MODES.DATA_SAVER ? "Low quality" : mode === CANONICAL_MODES.FULL ? "High quality" : "Medium quality",
-    prefetch: mode === CANONICAL_MODES.DATA_SAVER ? "Disabled" : mode === CANONICAL_MODES.FULL ? "Full" : "Limited",
-    animations: mode === CANONICAL_MODES.DATA_SAVER ? "Disabled" : mode === CANONICAL_MODES.FULL ? "Full" : "Reduced",
-    dataUsage: mode === CANONICAL_MODES.DATA_SAVER ? "Minimum" : mode === CANONICAL_MODES.FULL ? "Unrestricted" : "Optimized",
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
       {/* Header Navigation */}
-      <Header
-        activeSection={activeSection}
-        onNavigate={handleNavigate}
-      />
+      <Header activeSection={activeSection} onNavigate={handleNavigate} />
 
       <main className="flex-1 space-y-10 pb-16">
         {/* Hero Section */}
         <HeroSection reason={reason} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-          {/* Environment Status Grid (Desktop: 2 Columns, Mobile: 1 Column) */}
-          <section id="environment" aria-label="Environment Status">
+          {/* E-Commerce Product Listing Section */}
+          <section id="products" aria-label="E-Commerce Product Catalog">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-extrabold text-white tracking-tight">
+                  Featured Products
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Adaptive asset delivery automatically scales image variants according to mode
+                </p>
+              </div>
+            </div>
+
+            <ProductList
+              products={PRODUCTS}
+              onSelectProduct={setSelectedProduct}
+            />
+          </section>
+
+          {/* Optional Recommendations Widget (Defers under DATA SAVER) */}
+          <section id="recommendations" aria-label="Optional Recommendations">
+            <OptionalRecommendations
+              products={PRODUCTS}
+              onSelectProduct={setSelectedProduct}
+            />
+          </section>
+
+          {/* Adaptive Engine Diagnostic Area */}
+          <section id="adaptive-policy" aria-label="Adaptive Policy Diagnostic Area">
+            <AdaptiveStatus />
+          </section>
+
+          {/* Hardware & Environment Status Grid */}
+          <section id="environment" aria-label="Environment Detection">
             <h2 className="text-lg font-bold text-white mb-4 tracking-tight">
               Environment & Hardware Detection
             </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <NetworkStatus networkInfo={networkInfo} currentMode={legacyModeString} />
+              <NetworkStatus networkInfo={networkInfo} currentMode={activeMode.toUpperCase()} />
               <DeviceStatus deviceInfo={deviceInfo} />
-            </div>
-          </section>
-
-          {/* Adaptive UI Presentation Showcase Section */}
-          <section id="adaptive-showcase" aria-label="Adaptive Delivery Showcase">
-            <AdaptiveShowcase />
-          </section>
-
-          {/* Adaptive Policy Status Section */}
-          <section id="adaptive-policy" aria-label="Adaptive Policy Panel">
-            <h2 className="text-lg font-bold text-white mb-4 tracking-tight">
-              Adaptive Engine Policy State
-            </h2>
-            {adaptiveLoading && <LoadingState message="Detecting adaptive mode..." />}
-            {adaptiveError && <ErrorState message="Unable to load adaptive settings." />}
-            {!adaptiveLoading && !adaptiveError && (
-              <AdaptiveStatus policy={policyStateSnapshot} />
-            )}
-          </section>
-
-          {/* Available Mode Cards (3 Reusable Mode Cards) */}
-          <section id="mode-cards" aria-label="Adaptive Modes Overview">
-            <h2 className="text-lg font-bold text-white mb-4 tracking-tight">
-              Supported Adaptive Modes
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <ModeCard
-                modeKey={ADAPTIVE_MODES.DATA_SAVER}
-                isCurrentMode={mode === CANONICAL_MODES.DATA_SAVER}
-              />
-              <ModeCard
-                modeKey={ADAPTIVE_MODES.BALANCED}
-                isCurrentMode={mode === CANONICAL_MODES.BALANCED}
-              />
-              <ModeCard
-                modeKey={ADAPTIVE_MODES.FULL_EXPERIENCE}
-                isCurrentMode={mode === CANONICAL_MODES.FULL}
-              />
             </div>
           </section>
 
@@ -127,7 +104,7 @@ export default function Home() {
             <PerformanceComparison comparisonData={comparison} />
           </section>
 
-          {/* Settings / Preferences & Dev Mode Switcher */}
+          {/* Settings & Mode Controls */}
           <section id="settings" aria-label="Settings Panel">
             <SettingsPanel />
           </section>
@@ -139,8 +116,27 @@ export default function Home() {
         </div>
       </main>
 
+      {/* Product Details Modal */}
+      {selectedProduct && (
+        <ProductDetailsModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+        />
+      )}
+
+      {/* Slide-over Shopping Cart Drawer */}
+      <CartDrawer />
+
       {/* Footer */}
       <Footer />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <CartProvider>
+      <MainAppContent />
+    </CartProvider>
   );
 }

@@ -1,47 +1,35 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Settings, Info, Check } from "lucide-react";
 import { useAdaptive } from "@/hooks/useAdaptive";
 import { CANONICAL_MODES } from "@/adaptive/integration/adaptiveAdapter";
 
 export function SettingsPanel() {
-  const { mode, isManual, setModePreference } = useAdaptive();
-  const [selectedPreference, setSelectedPreference] = useState(
-    isManual ? mode : "AUTOMATIC"
-  );
-
-  useEffect(() => {
-    setSelectedPreference(isManual ? mode : "AUTOMATIC");
-  }, [mode, isManual]);
+  const { mode, isAuto, activeMode, setModePreference } = useAdaptive();
 
   const modeOptions = [
     {
-      id: "AUTOMATIC",
-      title: "Automatic (Recommended)",
-      desc: "Engine dynamically selects optimal mode according to real-time network and device classification.",
+      id: CANONICAL_MODES.AUTO,
+      title: "AUTO (Automatic Detection)",
+      desc: "Adaptive engine dynamically observes real-time network and device signals to choose policy.",
     },
     {
       id: CANONICAL_MODES.DATA_SAVER,
-      title: "Data Saver",
-      desc: "Request minimum data usage, low-resolution assets, and disabled prefetching.",
+      title: "DATA SAVER",
+      desc: "Delivers smaller compressed images, defers optional widgets, and disables prefetching under constrained conditions.",
     },
     {
       id: CANONICAL_MODES.BALANCED,
-      title: "Balanced",
-      desc: "Request balanced image quality, controlled loading, and moderate resource prefetching.",
+      title: "BALANCED",
+      desc: "Safe fallback providing a reasonable balance between visual quality, performance, and data usage.",
     },
     {
       id: CANONICAL_MODES.FULL,
-      title: "Full Experience",
-      desc: "Request maximum quality, uncompressed assets, full prefetching, and all visual effects.",
+      title: "FULL",
+      desc: "Delivers higher-quality image variants, richer optional content, and appropriate background prefetching.",
     },
   ];
-
-  const handleOptionChange = (optionId) => {
-    setSelectedPreference(optionId);
-    setModePreference(optionId);
-  };
 
   return (
     <div id="settings" className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl space-y-6">
@@ -52,10 +40,10 @@ export function SettingsPanel() {
           </div>
           <div>
             <h2 className="text-base font-bold text-white tracking-tight">
-              Adaptive User Settings & Development Mode Switcher
+              Adaptive Mode Settings & Controls
             </h2>
             <p className="text-xs text-slate-400">
-              Configure adaptive engine mode request preferences and test UI reactions
+              Select adaptive engine policy preference: AUTO, DATA SAVER, BALANCED, or FULL
             </p>
           </div>
         </div>
@@ -65,9 +53,9 @@ export function SettingsPanel() {
       <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-950/40 border border-blue-800/40 text-blue-200">
         <Info className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" aria-hidden="true" />
         <div className="text-xs space-y-1">
-          <p className="font-semibold text-blue-300">Adapter Interface & Dev Testing Control:</p>
+          <p className="font-semibold text-blue-300">Canonical Hook Integration:</p>
           <p className="text-blue-300/80">
-            Selecting a mode here sends a request through <code className="font-mono text-blue-200">useAdaptive()</code> to <code className="font-mono text-blue-200">adaptiveAdapter.js</code>. The UI responds immediately to <code className="font-mono text-blue-200">data-saver</code>, <code className="font-mono text-blue-200">balanced</code>, and <code className="font-mono text-blue-200">full</code> mode states.
+            Mode selection updates <code className="font-mono text-blue-200">useAdaptive()</code> runtime hook. Current active mode: <strong className="text-white">{activeMode.toUpperCase()}</strong>.
           </p>
         </div>
       </div>
@@ -75,11 +63,11 @@ export function SettingsPanel() {
       {/* Radio Group Selection */}
       <fieldset className="space-y-3">
         <legend className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-          Select Mode Preference / Development Mode Test
+          Select Adaptive Mode
         </legend>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {modeOptions.map((opt) => {
-            const isChecked = selectedPreference === opt.id;
+            const isChecked = mode === opt.id;
             return (
               <label
                 key={opt.id}
@@ -94,7 +82,7 @@ export function SettingsPanel() {
                   name="adaptiveModePreference"
                   value={opt.id}
                   checked={isChecked}
-                  onChange={() => handleOptionChange(opt.id)}
+                  onChange={() => setModePreference(opt.id)}
                   className="sr-only"
                 />
                 <div
