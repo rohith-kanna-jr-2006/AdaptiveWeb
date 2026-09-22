@@ -1,121 +1,155 @@
 /**
- * ADAPTIVE POLICY ENGINE ADAPTER BOUNDARY
+ * CANONICAL ADAPTIVE POLICY ENGINE ADAPTER (FORGEX AI 2026)
  * -------------------------------------------------------------
- * Acts as the strict boundary between Rohith's Adaptive Policy Engine
- * and Ravi's Frontend UI Components.
+ * Acts as the strict boundary between the Adaptive Policy Engine and the React UI.
  * 
- * Responsibilities:
- * 1. Normalize raw mode strings from engine contract to canonical modes:
- *    - "data-saver"
- *    - "balanced"
- *    - "full"
- * 2. Expose subscription interface to decouple UI components from engine internals.
+ * Rules:
+ * 1. UI components MUST NOT contain classification logic.
+ * 2. Supported user preferences: 'auto' | 'data-saver' | 'balanced' | 'full'
+ * 3. Safe Fallback Rule: Unknown or unsupported signals fallback to 'balanced'.
+ * 4. AUTO mode evaluates context signals via event listeners (no tight polling).
  */
 
-import { adaptiveMock } from "./adaptiveMock";
-
 export const CANONICAL_MODES = {
+  AUTO: "auto",
   DATA_SAVER: "data-saver",
   BALANCED: "balanced",
   FULL: "full",
 };
 
 /**
- * Safely normalizes any incoming mode string to one of the canonical mode values:
- * "data-saver" | "balanced" | "full"
+ * Safely normalizes incoming mode string to one of the canonical values.
  */
-export function normalizeMode(rawMode) {
-  if (!rawMode) return CANONICAL_MODES.BALANCED;
-  const str = String(rawMode).toLowerCase().trim().replace(/_/g, "-");
+export function normalizeMode(modeInput) {
+  if (!modeInput) return CANONICAL_MODES.BALANCED;
+  const str = String(modeInput).toLowerCase().trim().replace(/_/g, "-");
 
-  if (str.includes("saver") || str.includes("data-saver") || str === "low") {
+  if (str === "auto" || str === "automatic") return CANONICAL_MODES.AUTO;
+  if (str.includes("saver") || str === "low") return CANONICAL_MODES.DATA_SAVER;
+  if (str.includes("full") || str === "high") return CANONICAL_MODES.FULL;
+  return CANONICAL_MODES.BALANCED;
+}
+
+let userPreference = CANONICAL_MODES.AUTO;
+let activeMode = CANONICAL_MODES.BALANCED;
+let listeners = new Set();
+
+let networkInfo = {
+  effectiveType: "4g",
+  downlink: 8.5,
+  saveData: false,
+  rtt: 50,
+};
+
+function determineAutoActiveMode() {
+  if (typeof window === "undefined") return CANONICAL_MODES.BALANCED;
+
+  const conn =
+    navigator.connection ||
+    navigator.mozConnection ||
+    navigator.webkitConnection;
+
+  if (!conn) {
+    // Safe Fallback Rule: Unknown/unsupported -> BALANCED
+    return CANONICAL_MODES.BALANCED;
+  }
+
+  const effType = conn.effectiveType ? String(conn.effectiveType).toLowerCase() : "4g";
+  const saveData = Boolean(conn.saveData);
+  const downlink = conn.downlink !== undefined ? conn.downlink : 8.5;
+
+  networkInfo = {
+    effectiveType: effType,
+    downlink: downlink,
+    saveData: saveData,
+    rtt: conn.rtt || 50,
+  };
+
+  if (saveData || effType === "3g" || effType === "2g" || effType === "slow-2g" || downlink < 1.5) {
     return CANONICAL_MODES.DATA_SAVER;
   }
-  if (str.includes("full") || str.includes("experience") || str === "high") {
+  if (downlink >= 10 || effType === "5g") {
     return CANONICAL_MODES.FULL;
   }
   return CANONICAL_MODES.BALANCED;
 }
 
-const listeners = new Set();
+function updateState() {
+  if (userPreference === CANONICAL_MODES.AUTO) {
+    activeMode = determineAutoActiveMode();
+  } else {
+    activeMode = userPreference;
+  }
 
-let adapterState = {
-  mode: CANONICAL_MODES.BALANCED,
-  rawMode: "BALANCED",
-  network: "4g",
-  deviceTier: "mid",
-  saveData: false,
-  reason: "Moderate connection detected",
-  isManual: false,
-  isLoading: false,
-  error: null,
-};
+  const payload = {
+    mode: userPreference,
+    activeMode: activeMode,
+    isAuto: userPreference === CANONICAL_MODES.AUTO,
+    network: networkInfo.effectiveType,
+    saveData: networkInfo.saveData,
+    downlink: networkInfo.downlink,
+    reason:
+      userPreference === CANONICAL_MODES.AUTO
+        ? `Auto detection active (${activeMode.toUpperCase()} mode selected based on network signals)`
+        : `Manual mode selected: ${activeMode.toUpperCase()}`,
+    isLoading: false,
+    error: null,
+  };
 
-function notifyListeners() {
-  listeners.forEach((listener) => listener({ ...adapterState }));
+  listeners.forEach((cb) => cb(payload));
 }
 
-// Initialize adapter state from mock snapshot or engine contract
-const initialMock = adaptiveMock.getSnapshot();
-adapterState = {
-  ...adapterState,
-  ...initialMock,
-  mode: normalizeMode(initialMock.mode || initialMock.rawMode),
-};
+// Event-driven network signal change handler (no tight polling)
+if (typeof window !== "undefined") {
+  const conn =
+    navigator.connection ||
+    navigator.mozConnection ||
+    navigator.webkitConnection;
+
+  if (conn && conn.addEventListener) {
+    conn.addEventListener("change", () => {
+      if (userPreference === CANONICAL_MODES.AUTO) {
+        updateState();
+      }
+    });
+  }
+}
 
 export const adaptiveAdapter = {
-  /**
-   * Subscribe to adaptive policy engine updates.
-   * @param {Function} callback 
-   * @returns {Function} Unsubscribe cleanup function
-   */
   subscribe(callback) {
     listeners.add(callback);
-    callback({ ...adapterState });
+    updateState();
     return () => listeners.delete(callback);
   },
 
-  /**
-   * Get current policy snapshot.
-   */
   getSnapshot() {
-    return { ...adapterState };
-  },
-
-  /**
-   * Submit mode preference request to engine or mock layer.
-   */
-  setModePreference(modeInput) {
-    const canonical = normalizeMode(modeInput);
-    adaptiveMock.setMockMode(modeInput === "AUTOMATIC" ? "AUTOMATIC" : canonical);
-    const updatedMock = adaptiveMock.getSnapshot();
-
-    adapterState = {
-      ...adapterState,
-      ...updatedMock,
-      mode: normalizeMode(updatedMock.mode || updatedMock.rawMode),
+    return {
+      mode: userPreference,
+      activeMode: activeMode,
+      isAuto: userPreference === CANONICAL_MODES.AUTO,
+      network: networkInfo.effectiveType,
+      saveData: networkInfo.saveData,
+      downlink: networkInfo.downlink,
+      reason:
+        userPreference === CANONICAL_MODES.AUTO
+          ? `Auto detection active (${activeMode.toUpperCase()} mode selected based on network signals)`
+          : `Manual mode selected: ${activeMode.toUpperCase()}`,
       isLoading: false,
       error: null,
     };
-    notifyListeners();
   },
 
-  /**
-   * Update adapter state directly when Rohith's engine emits new output.
-   */
-  updateFromEngine(engineOutput) {
-    if (!engineOutput) return;
-    adapterState = {
-      mode: normalizeMode(engineOutput.mode || engineOutput.rawMode),
-      rawMode: engineOutput.rawMode || engineOutput.mode || "BALANCED",
-      network: engineOutput.network || "unknown",
-      deviceTier: engineOutput.deviceTier || "unknown",
-      saveData: Boolean(engineOutput.saveData),
-      reason: engineOutput.reason || "Engine policy update received",
-      isManual: Boolean(engineOutput.isManual),
-      isLoading: false,
-      error: null,
-    };
-    notifyListeners();
+  setModePreference(prefInput) {
+    const norm = normalizeMode(prefInput);
+    userPreference = norm;
+    updateState();
+  },
+
+  updateFromEngine(engineData) {
+    if (!engineData) return;
+    if (engineData.mode) {
+      userPreference = normalizeMode(engineData.mode);
+    }
+    updateState();
   },
 };

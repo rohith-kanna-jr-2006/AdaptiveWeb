@@ -1,43 +1,47 @@
 "use client";
 
 import React, { useState } from "react";
-import { Image as ImageIcon, AlertCircle } from "lucide-react";
+import { Image as ImageIcon } from "lucide-react";
 import { useAdaptive } from "@/hooks/useAdaptive";
 import { CANONICAL_MODES } from "@/adaptive/integration/adaptiveAdapter";
 
 /**
- * Reusable Adaptive Image Component.
- * Dynamically delivers optimal asset tier based on active adaptive mode.
- * 
+ * Reusable Adaptive Image Component (FORGEX AI 2026)
+ * -------------------------------------------------------------
+ * Dynamically delivers optimal asset tier depending on active adaptive policy:
  * - DATA SAVER  -> Small low-data image tier
  * - BALANCED    -> Medium quality image tier
- * - FULL        -> Large high-res image tier
+ * - FULL        -> Large high-resolution image tier
  * 
- * Includes HTML srcset/sizes attributes, native lazy loading, and error fallback handling.
+ * Includes HTML srcset/sizes attributes, native lazy loading, and robust fallback error handling.
  */
 export function AdaptiveImage({
   small,
   medium,
   large,
+  src,
   fallback = "/images/placeholder.svg",
-  alt = "Adaptive image content",
+  alt = "Product image",
   className = "",
+  eager = false,
   width,
   height,
   ...props
 }) {
-  const { mode } = useAdaptive();
+  const { activeMode } = useAdaptive();
   const [hasError, setHasError] = useState(false);
 
-  // Select primary src depending on active mode
-  let primarySrc = medium || small || large;
-  if (mode === CANONICAL_MODES.DATA_SAVER) {
-    primarySrc = small || medium || large;
-  } else if (mode === CANONICAL_MODES.FULL) {
-    primarySrc = large || medium || small;
+  // Determine primary source URL based on active policy mode
+  let primarySrc = src || medium || small || large;
+  if (activeMode === CANONICAL_MODES.DATA_SAVER) {
+    primarySrc = small || medium || large || src;
+  } else if (activeMode === CANONICAL_MODES.FULL) {
+    primarySrc = large || medium || small || src;
+  } else {
+    primarySrc = medium || small || large || src;
   }
 
-  // Build responsive srcset attribute if available
+  // Build responsive srcset attribute if variants exist
   const srcSetEntries = [];
   if (small) srcSetEntries.push(`${small} 400w`);
   if (medium) srcSetEntries.push(`${medium} 800w`);
@@ -56,7 +60,7 @@ export function AdaptiveImage({
         <ImageIcon className="w-8 h-8 text-slate-500 mb-2" aria-hidden="true" />
         <span className="text-xs font-medium text-slate-400 text-center">{alt}</span>
         <span className="text-[10px] text-slate-500 mt-1 italic">
-          [Adaptive placeholder ({mode.toUpperCase()})]
+          [Image Placeholder ({activeMode?.toUpperCase()})]
         </span>
       </div>
     );
@@ -68,7 +72,7 @@ export function AdaptiveImage({
       srcSet={srcSetString}
       sizes={sizesString}
       alt={alt}
-      loading="lazy"
+      loading={eager ? "eager" : "lazy"}
       decoding="async"
       onError={() => setHasError(true)}
       className={`transition-all duration-300 object-cover ${className}`}
