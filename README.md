@@ -1,6 +1,6 @@
 # AdaptiveWeb — Backend API & Server-Side Adaptive Engine
 
-AdaptiveWeb is a Node.js / Express.js / MongoDB backend web application providing server-side adaptive content delivery rules, real-time context evaluation, client configuration management, and performance measurement tracking.
+AdaptiveWeb is a Node.js / Express.js / MongoDB backend web application providing server-side adaptive content delivery rules, real-time context evaluation, product catalog services, asset variant delivery, client configuration management, and performance measurement tracking.
 
 ---
 
@@ -18,7 +18,8 @@ server/
 │   ├── healthController.js # GET /api/health
 │   ├── configController.js # GET /api/config, PUT /api/config
 │   ├── adaptiveController.js# GET /api/adaptive/policy, POST /api/adaptive/evaluate
-│   └── metricsController.js # POST /api/metrics, GET /api/metrics/:sessionId
+│   ├── metricsController.js # POST /api/metrics, GET /api/metrics/:sessionId
+│   └── productController.js # GET /api/products, GET /api/products/:id, GET /api/categories
 │
 ├── middleware/
 │   ├── errorHandler.js     # Centralized error handler with safety envelopes
@@ -29,23 +30,30 @@ server/
 │   ├── AppConfig.js        # Global adaptive configuration schema
 │   ├── AdaptivePolicy.js   # Rule-based policy schema
 │   ├── PerformanceMetric.js# Performance measurement schema
+│   ├── Product.js          # Product schema with asset variants (small, medium, large)
 │   └── Session.js          # Client session context schema
 │
 ├── routes/
 │   ├── healthRoutes.js     # /api/health routes
 │   ├── configRoutes.js     # /api/config routes
 │   ├── adaptiveRoutes.js   # /api/adaptive routes
-│   └── metricsRoutes.js    # /api/metrics routes
+│   ├── metricsRoutes.js    # /api/metrics routes
+│   └── productRoutes.js    # /api/products & /api/categories routes
+│
+├── seed/
+│   └── seedProducts.js     # Deterministic 30-item product seeder
 │
 ├── services/
 │   ├── configService.js    # Runtime configuration service
 │   ├── adaptiveService.js  # Transparent rule-based evaluation engine
-│   └── metricsService.js   # Performance metrics persistence and retrieval service
+│   ├── metricsService.js   # Performance metrics persistence and retrieval service
+│   └── productService.js   # Product query, pagination & minimal payload service
 │
 ├── validators/
 │   ├── configValidator.js   # PUT /api/config validation
 │   ├── adaptiveValidator.js # POST /api/adaptive/evaluate validation
-│   └── metricsValidator.js  # POST /api/metrics & GET /api/metrics/:sessionId validation
+│   ├── metricsValidator.js  # POST /api/metrics & GET /api/metrics/:sessionId validation
+│   └── productValidator.js  # GET /api/products query & GET /api/products/:id param validation
 │
 ├── app.js                  # Express app middleware & route initialization
 └── server.js               # Entry point listener with graceful shutdown
@@ -75,6 +83,12 @@ Configure settings in `.env`:
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/adaptiveweb
 NODE_ENV=development
+```
+
+### Step 3: Seed MongoDB Database
+To populate MongoDB with a deterministic dataset of 30 products:
+```bash
+npm run seed
 ```
 
 ---
@@ -131,6 +145,9 @@ All endpoints follow a standardized response envelope:
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
 | `GET` | `/api/health` | Service health status check |
+| `GET` | `/api/products` | Retrieve paginated product catalog with minimal list payload |
+| `GET` | `/api/products/:id` | Retrieve single product full details by ID |
+| `GET` | `/api/categories` | Retrieve distinct product categories |
 | `GET` | `/api/config` | Retrieve current runtime adaptive config |
 | `PUT` | `/api/config` | Update runtime adaptive settings |
 | `GET` | `/api/adaptive/policy` | Retrieve active adaptive delivery policies |
@@ -163,12 +180,17 @@ curl -X GET http://localhost:5000/api/health
 
 ---
 
-#### 2. GET `/api/config`
-Retrieves configurable adaptive delivery settings.
+#### 2. GET `/api/products`
+Returns a paginated list of products. Optimized with minimal field projection (`_id`, `name`, `price`, `category`, `thumbnail`, `image`, `rating`, `stock`) excluding heavy descriptions.
+
+**Query Parameters:**
+- `page`: Page number (integer >= 1, default `1`)
+- `pageSize`: Items per page (integer between 1 and 50, default `10`)
+- `category`: Optional filter by category string (e.g. `Audio`)
 
 **Example Request:**
 ```bash
-curl -X GET http://localhost:5000/api/config
+curl -X GET "http://localhost:5000/api/products?page=1&pageSize=10"
 ```
 
 **Example Response (200 OK):**
@@ -176,208 +198,108 @@ curl -X GET http://localhost:5000/api/config
 {
   "success": true,
   "data": {
-    "adaptiveEnabled": true,
-    "measurementInterval": 5000,
-    "qualityThresholds": {
-      "poorLatency": 300,
-      "poorDownlink": 1.5,
-      "goodLatency": 100,
-      "goodDownlink": 5
-    }
-  }
-}
-```
-
----
-
-#### 3. PUT `/api/config`
-Updates runtime adaptive configuration parameters.
-
-**Example Request:**
-```bash
-curl -X PUT http://localhost:5000/api/config \
-  -H "Content-Type: application/json" \
-  -d '{
-    "adaptiveEnabled": true,
-    "measurementInterval": 10000,
-    "qualityThresholds": {
-      "poorLatency": 350
-    }
-  }'
-```
-
-**Example Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "adaptiveEnabled": true,
-    "measurementInterval": 10000,
-    "qualityThresholds": {
-      "poorLatency": 350,
-      "poorDownlink": 1.5,
-      "goodLatency": 100,
-      "goodDownlink": 5
-    }
-  }
-}
-```
-
----
-
-#### 4. GET `/api/adaptive/policy`
-Retrieves currently configured rule-based policies.
-
-**Example Request:**
-```bash
-curl -X GET http://localhost:5000/api/adaptive/policy
-```
-
-**Example Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "enabled": true,
-    "policies": [...]
-  }
-}
-```
-
----
-
-#### 5. POST `/api/adaptive/evaluate`
-Evaluates client network, device, and performance conditions to output adaptive content decisions.
-
-**Example Request (Poor Network):**
-```bash
-curl -X POST http://localhost:5000/api/adaptive/evaluate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "sessionId": "sess-mobile-100",
-    "network": {
-      "effectiveType": "2g",
-      "downlink": 0.5,
-      "latency": 450
-    },
-    "device": {
-      "type": "mobile"
-    }
-  }'
-```
-
-**Example Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "sessionId": "sess-mobile-100",
-    "evaluatedProfile": "poor",
-    "decision": {
-      "contentQuality": "low",
-      "optimization": "aggressive",
-      "prefetchEnabled": false,
-      "maxImageResolution": "480p",
-      "compressionLevel": "high",
-      "resourceStrategy": "minimal"
-    },
-    "evaluatedAt": "2026-09-23T03:15:00.000Z"
-  }
-}
-```
-
----
-
-#### 6. POST `/api/metrics`
-Stores performance measurements submitted by client, server, or browser measurements.
-
-**Example Request:**
-```bash
-curl -X POST http://localhost:5000/api/metrics \
-  -H "Content-Type: application/json" \
-  -d '{
-    "sessionId": "sess-mobile-100",
-    "metricName": "loadTime",
-    "value": 1250,
-    "unit": "ms",
-    "source": "client"
-  }'
-```
-
-**Example Response (201 Created):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "66f123456789abcdef012345",
-    "sessionId": "sess-mobile-100",
-    "metricName": "loadTime",
-    "value": 1250,
-    "unit": "ms",
-    "source": "client",
-    "timestamp": "2026-09-23T03:15:00.000Z"
-  }
-}
-```
-
----
-
-#### 7. GET `/api/metrics/:sessionId`
-Retrieves all recorded metrics for a specific session ID.
-
-**Example Request:**
-```bash
-curl -X GET http://localhost:5000/api/metrics/sess-mobile-100
-```
-
-**Example Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "sessionId": "sess-mobile-100",
-    "count": 1,
-    "metrics": [
+    "products": [
       {
         "_id": "66f123456789abcdef012345",
-        "sessionId": "sess-mobile-100",
-        "metricName": "loadTime",
-        "value": 1250,
-        "unit": "ms",
-        "source": "client",
-        "timestamp": "2026-09-23T03:15:00.000Z"
+        "name": "UltraTab Pro 11-inch",
+        "price": 799.99,
+        "category": "Electronics",
+        "thumbnail": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=200&q=80",
+        "image": {
+          "small": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=480&q=60",
+          "medium": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=800&q=80",
+          "large": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=1400&q=90"
+        },
+        "rating": 4.8,
+        "stock": 45
       }
-    ]
+    ],
+    "pagination": {
+      "totalItems": 30,
+      "totalPages": 3,
+      "currentPage": 1,
+      "pageSize": 10
+    }
   }
 }
 ```
 
 ---
 
-## 6. Server-Side Adaptive Rules Engine
+#### 3. GET `/api/products/:id`
+Retrieves full details for a single product by 24-character hexadecimal ObjectId.
 
-The evaluation engine uses transparent, deterministic rules:
+**Example Request:**
+```bash
+curl -X GET http://localhost:5000/api/products/66f123456789abcdef012345
+```
 
-1. **Poor Network** (`effectiveType` in `['slow-2g', '2g']` OR `latency >= 300ms` OR `downlink <= 1.5Mbps` OR `loadTime >= 3000ms`):
-   - `contentQuality`: `"low"`
-   - `optimization`: `"aggressive"`
-   - `prefetchEnabled`: `false`
-   - `maxImageResolution`: `"480p"`
-   - `compressionLevel`: `"high"`
-   - `resourceStrategy`: `"minimal"`
+**Example Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "66f123456789abcdef012345",
+    "name": "UltraTab Pro 11-inch",
+    "description": "High-performance tablet with Liquid Retina display, M2 chip, and all-day battery life.",
+    "price": 799.99,
+    "category": "Electronics",
+    "thumbnail": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=200&q=80",
+    "image": {
+      "small": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=480&q=60",
+      "medium": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=800&q=80",
+      "large": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=1400&q=90"
+    },
+    "rating": 4.8,
+    "stock": 45
+  }
+}
+```
 
-2. **Moderate Network** (`effectiveType == '3g'` OR `100ms < latency < 300ms` OR `1.5Mbps < downlink < 5Mbps`):
-   - `contentQuality`: `"medium"`
-   - `optimization`: `"standard"`
-   - `prefetchEnabled`: `false`
-   - `maxImageResolution`: `"720p"`
-   - `compressionLevel`: `"standard"`
-   - `resourceStrategy`: `"balanced"`
+---
 
-3. **Good Network** (`effectiveType == '4g'` AND `latency <= 100ms` AND `downlink >= 5Mbps`):
-   - `contentQuality`: `"high"`
-   - `optimization`: `"minimal"`
-   - `prefetchEnabled`: `true`
-   - `maxImageResolution`: `"1080p"`
-   - `compressionLevel`: `"none"`
-   - `resourceStrategy`: `"full"`
+#### 4. GET `/api/categories`
+Retrieves distinct product categories currently available in the database.
+
+**Example Request:**
+```bash
+curl -X GET http://localhost:5000/api/categories
+```
+
+**Example Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    "Accessories",
+    "Audio",
+    "Electronics",
+    "Home & Smart Living",
+    "Wearables"
+  ]
+}
+```
+
+---
+
+## 6. Server-Side Optimization & Caching Strategy
+
+The Express backend implements several server-side payload optimizations:
+
+1. **HTTP Compression (`compression`)**: Gzip compression is active across all API responses, significantly reducing network transfer size.
+2. **Field Projection**: List views (`/api/products`) project only essential summary attributes, omitting long `description` strings to keep payloads small.
+3. **Lean Database Queries (`.lean()`)**: Product queries use `.lean()` to return plain JS objects, bypassing Mongoose document wrapping overhead.
+4. **Cache Control Headers**: Product and category GET responses include `Cache-Control: public, max-age=300` headers to leverage browser/proxy caching for stable catalog data.
+
+---
+
+## 7. Asset Variant Contract
+
+Product image assets expose 3 responsive variants alongside the default `thumbnail`:
+
+- `image.small`: Lower resolution/compressed image intended for 2G / slow connection profiles or mobile screens.
+- `image.medium`: Standard resolution image for 3G / moderate connection profiles or tablet screens.
+- `image.large`: High resolution image for 4G / fast connection profiles or desktop screens.
+- `thumbnail`: Ultra-light preview thumbnail for catalog grid rendering.
+
+The browser-side Adaptive Engine selects which image variant URL to request based on its active policy decision.
