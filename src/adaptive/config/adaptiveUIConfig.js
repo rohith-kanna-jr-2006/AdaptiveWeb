@@ -10,7 +10,7 @@
  * The mode MUST originate from Rohith's engine/adapter.
  */
 
-import { CANONICAL_MODES } from "../integration/adaptiveEngineAdapter";
+import { CANONICAL_MODES } from "../../integration/adaptiveEngineAdapter";
 
 export const adaptiveUIConfig = {
   [CANONICAL_MODES.DATA_SAVER]: {
