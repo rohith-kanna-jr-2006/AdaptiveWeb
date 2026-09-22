@@ -7,10 +7,11 @@ import { CANONICAL_MODES } from "@/adaptive/integration/adaptiveAdapter";
 
 /**
  * Reusable Adaptive Mode Indicator badge.
- * In FULL mode, displays rich animated glowing effects and floating badges.
+ * Displays mode title (AUTO, DATA SAVER, BALANCED, FULL) with icons and text labels.
+ * Includes data-testid="adaptive-mode-indicator" for Playwright automation.
  */
 export function AdaptiveModeIndicator({ className = "" }) {
-  const { activeMode, isAuto } = useAdaptive();
+  const { mode, activeMode, isAuto } = useAdaptive();
 
   const isFull = activeMode === CANONICAL_MODES.FULL;
   const isDataSaver = activeMode === CANONICAL_MODES.DATA_SAVER;
@@ -28,10 +29,11 @@ export function AdaptiveModeIndicator({ className = "" }) {
 
   const titleText = isAuto
     ? `AUTO (${activeMode.toUpperCase()})`
-    : activeMode.toUpperCase();
+    : `${activeMode.toUpperCase()} (Manual)`;
 
   return (
     <div
+      data-testid="adaptive-mode-indicator"
       aria-label={`Adaptive Mode: ${titleText}`}
       className={`inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full border shadow-sm transition-all duration-300 ${badgeStyle} ${className}`}
     >

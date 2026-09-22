@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { SlidersHorizontal, Image, RefreshCw, Sparkles, HardDrive, Wifi } from "lucide-react";
+import { SlidersHorizontal, Image, RefreshCw, HardDrive, Wifi, Cpu } from "lucide-react";
 import { useAdaptive } from "@/hooks/useAdaptive";
 import { AdaptiveModeIndicator } from "@/adaptive/components/AdaptiveModeIndicator/AdaptiveModeIndicator";
 
@@ -10,13 +10,23 @@ export function AdaptiveStatus() {
 
   const diagnosticFields = [
     {
-      label: "Adaptive Mode",
-      value: isAuto ? `AUTO → ${activeMode.toUpperCase()}` : activeMode.toUpperCase(),
+      label: "Selection Mode",
+      value: isAuto ? "AUTO" : "MANUAL OVERRIDE",
       icon: SlidersHorizontal,
     },
     {
+      label: "Effective Active Mode",
+      value: activeMode.toUpperCase(),
+      icon: Cpu,
+    },
+    {
+      label: "Decision Source",
+      value: isAuto ? "Engine (Auto Detection)" : "Manual Override",
+      icon: Wifi,
+    },
+    {
       label: "Network Signal",
-      value: network ? `${network.toUpperCase()} ${saveData ? "(Save-Data On)" : ""}` : "Unknown",
+      value: network ? `${network.toUpperCase()} ${saveData ? "(Save-Data On)" : ""}` : "Unknown (Fallback)",
       icon: Wifi,
     },
     {
@@ -25,19 +35,17 @@ export function AdaptiveStatus() {
       icon: HardDrive,
     },
     {
-      label: "Image Quality Tier",
+      label: "Image Quality Variant",
       value: `${config.imageQualityTier.toUpperCase()} (${config.imageDimensionScale})`,
       icon: Image,
-    },
-    {
-      label: "Prefetch Strategy",
-      value: config.prefetchStrategy.toUpperCase(),
-      icon: RefreshCw,
     },
   ];
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+    <div
+      data-testid="adaptive-status-panel"
+      className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6"
+    >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
         <div className="flex items-center gap-3">
@@ -49,7 +57,7 @@ export function AdaptiveStatus() {
               Adaptive Policy Diagnostic Area
             </h2>
             <p className="text-xs text-slate-400">
-              Live status emitted by canonical <code className="font-mono text-blue-300">useAdaptive()</code> runtime hook
+              Live engine output consumed via canonical <code className="font-mono text-blue-300">useAdaptive()</code> hook
             </p>
           </div>
         </div>
@@ -59,7 +67,7 @@ export function AdaptiveStatus() {
       {/* Engine Reason Banner */}
       <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 space-y-1">
         <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-          Current Engine Policy Reason
+          Current Engine Policy Reason & Source
         </span>
         <p className="text-sm font-medium text-slate-200">{reason}</p>
       </div>
