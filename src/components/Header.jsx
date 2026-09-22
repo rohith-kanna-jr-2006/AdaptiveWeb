@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import { Gauge, Menu, X, Settings, LayoutDashboard, Home } from "lucide-react";
-import { ModeBadge } from "./ModeBadge";
+import { AdaptiveModeIndicator } from "@/adaptive/components/AdaptiveModeIndicator/AdaptiveModeIndicator";
 
-export function Header({ currentMode, activeSection, onNavigate }) {
+export function Header({ activeSection, onNavigate }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -59,13 +59,11 @@ export function Header({ currentMode, activeSection, onNavigate }) {
             })}
           </nav>
 
-          {/* Active Mode Status Badge */}
+          {/* Active Adaptive Mode Indicator */}
           <div className="flex items-center gap-3">
-            {currentMode && (
-              <div className="hidden sm:block">
-                <ModeBadge mode={currentMode} />
-              </div>
-            )}
+            <div className="hidden sm:block">
+              <AdaptiveModeIndicator />
+            </div>
 
             {/* Mobile Menu Button */}
             <button
@@ -106,12 +104,10 @@ export function Header({ currentMode, activeSection, onNavigate }) {
             );
           })}
 
-          {currentMode && (
-            <div className="pt-2 border-t border-slate-800 flex items-center justify-between px-3">
-              <span className="text-xs text-slate-400 font-medium">Active Policy Mode:</span>
-              <ModeBadge mode={currentMode} />
-            </div>
-          )}
+          <div className="pt-2 border-t border-slate-800 flex items-center justify-between px-3">
+            <span className="text-xs text-slate-400 font-medium">Adaptive Mode:</span>
+            <AdaptiveModeIndicator />
+          </div>
         </nav>
       )}
     </header>

@@ -2,9 +2,9 @@
 
 import React from "react";
 import { Cpu, Wifi, Activity } from "lucide-react";
-import { ModeBadge } from "./ModeBadge";
+import { AdaptiveModeIndicator } from "@/adaptive/components/AdaptiveModeIndicator/AdaptiveModeIndicator";
 
-export function HeroSection({ currentMode, reason }) {
+export function HeroSection({ reason }) {
   return (
     <section id="hero" className="py-10 md:py-14 border-b border-slate-800 bg-gradient-to-b from-slate-950 to-slate-900/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -28,7 +28,7 @@ export function HeroSection({ currentMode, reason }) {
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Current Engine Mode
               </span>
-              {currentMode && <ModeBadge mode={currentMode} />}
+              <AdaptiveModeIndicator />
             </div>
             {reason && (
               <p className="text-xs text-slate-300 bg-slate-950/60 p-3 rounded-lg border border-slate-800/80">

@@ -1,13 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
-import { Settings, Info, Check, ShieldAlert } from "lucide-react";
-import { ADAPTIVE_MODES } from "@/adapters/adaptiveEngineAdapter";
+import React, { useState, useEffect } from "react";
+import { Settings, Info, Check } from "lucide-react";
+import { useAdaptive } from "@/hooks/useAdaptive";
+import { CANONICAL_MODES } from "@/adaptive/integration/adaptiveAdapter";
 
-export function SettingsPanel({ currentPolicy, onSelectMode }) {
+export function SettingsPanel() {
+  const { mode, isManual, setModePreference } = useAdaptive();
   const [selectedPreference, setSelectedPreference] = useState(
-    currentPolicy?.manualOverride ? currentPolicy?.mode : "AUTOMATIC"
+    isManual ? mode : "AUTOMATIC"
   );
+
+  useEffect(() => {
+    setSelectedPreference(isManual ? mode : "AUTOMATIC");
+  }, [mode, isManual]);
 
   const modeOptions = [
     {
@@ -16,17 +22,17 @@ export function SettingsPanel({ currentPolicy, onSelectMode }) {
       desc: "Engine dynamically selects optimal mode according to real-time network and device classification.",
     },
     {
-      id: ADAPTIVE_MODES.DATA_SAVER,
+      id: CANONICAL_MODES.DATA_SAVER,
       title: "Data Saver",
       desc: "Request minimum data usage, low-resolution assets, and disabled prefetching.",
     },
     {
-      id: ADAPTIVE_MODES.BALANCED,
+      id: CANONICAL_MODES.BALANCED,
       title: "Balanced",
       desc: "Request balanced image quality, controlled loading, and moderate resource prefetching.",
     },
     {
-      id: ADAPTIVE_MODES.FULL_EXPERIENCE,
+      id: CANONICAL_MODES.FULL,
       title: "Full Experience",
       desc: "Request maximum quality, uncompressed assets, full prefetching, and all visual effects.",
     },
@@ -34,7 +40,7 @@ export function SettingsPanel({ currentPolicy, onSelectMode }) {
 
   const handleOptionChange = (optionId) => {
     setSelectedPreference(optionId);
-    onSelectMode?.(optionId);
+    setModePreference(optionId);
   };
 
   return (
@@ -46,10 +52,10 @@ export function SettingsPanel({ currentPolicy, onSelectMode }) {
           </div>
           <div>
             <h2 className="text-base font-bold text-white tracking-tight">
-              Adaptive User Settings & Preferences
+              Adaptive User Settings & Development Mode Switcher
             </h2>
             <p className="text-xs text-slate-400">
-              Configure adaptive engine mode request preferences
+              Configure adaptive engine mode request preferences and test UI reactions
             </p>
           </div>
         </div>
@@ -59,9 +65,9 @@ export function SettingsPanel({ currentPolicy, onSelectMode }) {
       <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-950/40 border border-blue-800/40 text-blue-200">
         <Info className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" aria-hidden="true" />
         <div className="text-xs space-y-1">
-          <p className="font-semibold text-blue-300">Engine Integration Status:</p>
+          <p className="font-semibold text-blue-300">Adapter Interface & Dev Testing Control:</p>
           <p className="text-blue-300/80">
-            Selecting a mode here submits a preference request to Rohith's Adaptive Policy Engine adapter. If engine policy policies enforce strict network boundaries, the engine may override manual selections.
+            Selecting a mode here sends a request through <code className="font-mono text-blue-200">useAdaptive()</code> to <code className="font-mono text-blue-200">adaptiveAdapter.js</code>. The UI responds immediately to <code className="font-mono text-blue-200">data-saver</code>, <code className="font-mono text-blue-200">balanced</code>, and <code className="font-mono text-blue-200">full</code> mode states.
           </p>
         </div>
       </div>
@@ -69,7 +75,7 @@ export function SettingsPanel({ currentPolicy, onSelectMode }) {
       {/* Radio Group Selection */}
       <fieldset className="space-y-3">
         <legend className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-          Select Mode Preference
+          Select Mode Preference / Development Mode Test
         </legend>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {modeOptions.map((opt) => {
