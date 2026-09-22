@@ -1,0 +1,43 @@
+{
+  "name": "adaptiveweb",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:coverage:watch": "jest --coverage --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rohith-kanna-jr-2006/AdaptiveWeb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rohith-kanna-jr-2006/AdaptiveWeb/issues"
+  },
+  "homepage": "https://github.com/rohith-kanna-jr-2006/AdaptiveWeb#readme",
+  "keywords": [
+    "adaptive",
+    "network",
+    "performance",
+    "responsive"
+  ],
+  "author": "NRRPSmartCodex",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "next": "^15.5.25",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^8.0.6",
+    "@babel/preset-env": "^8.0.6",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "babel-jest": "^30.5.2",
+    "jest": "^30.5.2",
+    "jsdom": "^30.1.1",
+    "typescript": "^5.8.3"
+  }
+}
