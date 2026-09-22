@@ -3,14 +3,14 @@
  * -------------------------------------------------------------
  * Maps canonical mode values ('data-saver', 'balanced', 'full')
  * to presentation rules and UI flags.
- * 
+ *
  * IMPORTANT:
  * This configuration strictly controls PRESENTATION.
  * It does NOT decide the user's adaptive mode.
  * The mode MUST originate from Rohith's engine/adapter.
  */
 
-import { CANONICAL_MODES } from "../integration/adaptiveAdapter";
+import { CANONICAL_MODES } from "../integration/adaptiveEngineAdapter";
 
 export const adaptiveUIConfig = {
   [CANONICAL_MODES.DATA_SAVER]: {

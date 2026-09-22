@@ -121,8 +121,13 @@ export class ModeSelector {
       conditionLabel === "constrained" &&
       this.#currentCondition !== "constrained";
 
-    // Save-data or user override → immediate switch
-    if (saveData === true && candidateMode !== MODES.DATA_SAVER) return true;
+    // Save-data preference forces data-saver immediately (overrides hysteresis)
+    if (saveData === true) {
+      // If candidate is already data-saver, always apply it
+      if (candidateMode === MODES.DATA_SAVER) return true;
+      // If candidate is not data-saver, force downgrade to data-saver
+      return true;
+    }
 
     // No strong reason to change
     if (

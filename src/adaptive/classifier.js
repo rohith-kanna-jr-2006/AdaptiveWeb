@@ -73,7 +73,7 @@ export function classify(signals) {
 
   // --- RTT ---
   const rtt = network.rttMs;
-  if (rtt !== null) {
+  if (rtt != null) {
     if (rtt > THRESHOLDS.RTT_CONSTRAINED_MS) {
       evidence.push(`RTT ${rtt}ms exceeds ${THRESHOLDS.RTT_CONSTRAINED_MS}ms threshold`);
     } else if (rtt > THRESHOLDS.RTT_MODERATE_MS) {
@@ -85,7 +85,7 @@ export function classify(signals) {
 
   // --- Downlink ---
   const downlink = network.downlinkMbps;
-  if (downlink !== null) {
+  if (downlink != null) {
     if (downlink < THRESHOLDS.DOWNLINK_CONSTRAINED_MBPS) {
       evidence.push(`downlink ${downlink}Mbps below ${THRESHOLDS.DOWNLINK_CONSTRAINED_MBPS}Mbps`);
     } else if (downlink < THRESHOLDS.DOWNLINK_MODERATE_MBPS) {

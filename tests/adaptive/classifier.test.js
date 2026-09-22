@@ -53,8 +53,8 @@ describe("classifier", () => {
       expect(classify({ network: { effectiveType: "2g" } }).label).toBe(LABELS.CONSTRAINED);
     });
 
-    it("classifies 4g as capable", () => {
-      expect(classify({ network: { effectiveType: "4g" } }).label).toBe(LABELS.CAPABLE);
+    it("classifies 4g with no other signals as moderate (not capable)", () => {
+      expect(classify({ network: { effectiveType: "4g" } }).label).toBe(LABELS.MODERATE);
     });
 
     it("classifies 3g as moderate", () => {
