@@ -1,50 +1,45 @@
 /**
- * ADAPTIVE UI PRESENTATION CONFIGURATION
+ * ADAPTIVE UI PRESENTATION CONFIGURATION (FORGEX AI 2026)
  * -------------------------------------------------------------
- * Maps canonical mode values ('data-saver', 'balanced', 'full')
- * to presentation rules and UI flags.
+ * Maps active adaptive modes ('data-saver', 'balanced', 'full') to presentation rules.
  * 
  * IMPORTANT:
- * This configuration strictly controls PRESENTATION.
- * It does NOT decide the user's adaptive mode.
- * The mode MUST originate from Rohith's engine/adapter.
+ * Controls PRESENTATION ONLY.
+ * Does NOT classify or decide the adaptive mode.
  */
 
 import { CANONICAL_MODES } from "../integration/adaptiveAdapter";
 
 export const adaptiveUIConfig = {
   [CANONICAL_MODES.DATA_SAVER]: {
-    imageSize: "small",
-    qualityTier: "low",
-    showSecondaryContent: false,
+    imageQualityTier: "small", // 'small' | 'medium' | 'large'
+    imageDimensionScale: "compact", // 'compact' | 'standard' | 'large'
+    showOptionalRecommendations: false, // Defer optional widgets
     animations: false,
-    deferOptionalSections: true,
     prefetchStrategy: "disabled",
     displayTitle: "DATA SAVER",
-    badgeColor: "amber",
+    resourcePolicyText: "Reduced (Small images, deferred optional widgets)",
   },
   [CANONICAL_MODES.BALANCED]: {
-    imageSize: "medium",
-    qualityTier: "medium",
-    showSecondaryContent: true,
+    imageQualityTier: "medium",
+    imageDimensionScale: "standard",
+    showOptionalRecommendations: true,
     animations: "reduced",
-    deferOptionalSections: false,
     prefetchStrategy: "limited",
     displayTitle: "BALANCED",
-    badgeColor: "blue",
+    resourcePolicyText: "Balanced (Medium images, standard resources)",
   },
   [CANONICAL_MODES.FULL]: {
-    imageSize: "large",
-    qualityTier: "high",
-    showSecondaryContent: true,
+    imageQualityTier: "large",
+    imageDimensionScale: "large",
+    showOptionalRecommendations: true,
     animations: true,
-    deferOptionalSections: false,
     prefetchStrategy: "full",
-    displayTitle: "FULL EXPERIENCE",
-    badgeColor: "emerald",
+    displayTitle: "FULL",
+    resourcePolicyText: "Rich (High-resolution images, full features enabled)",
   },
 };
 
-export function getUIConfig(mode) {
-  return adaptiveUIConfig[mode] || adaptiveUIConfig[CANONICAL_MODES.BALANCED];
+export function getUIConfig(activeMode) {
+  return adaptiveUIConfig[activeMode] || adaptiveUIConfig[CANONICAL_MODES.BALANCED];
 }
