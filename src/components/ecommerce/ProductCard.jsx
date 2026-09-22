@@ -54,7 +54,7 @@ export function ProductCard({ product, onSelectProduct }) {
           </p>
         )}
         <div className="text-base font-extrabold text-blue-400 pt-1">
-          ${product.price.toFixed(2)}
+          ₹{product.price.toLocaleString("en-IN")}
         </div>
       </div>
 
