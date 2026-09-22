@@ -23,6 +23,7 @@ import { useAdaptive } from "@/hooks/useAdaptive";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { useDeviceStatus } from "@/hooks/useDeviceStatus";
 import { usePerformanceMetrics } from "@/hooks/usePerformanceMetrics";
+import { CANONICAL_MODES } from "@/adaptive/integration/adaptiveAdapter";
 
 function MainAppContent() {
   const [activeSection, setActiveSection] = useState("products");
@@ -33,6 +34,8 @@ function MainAppContent() {
   const deviceInfo = useDeviceStatus();
   const { metrics, comparison } = usePerformanceMetrics();
 
+  const isFull = activeMode === CANONICAL_MODES.FULL;
+
   const handleNavigate = (sectionId) => {
     setActiveSection(sectionId);
     const elem = document.getElementById(sectionId);
@@ -41,8 +44,10 @@ function MainAppContent() {
     }
   };
 
+  const animClass = isFull ? "animate-fade-in-up" : "";
+
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 transition-colors duration-500">
       {/* Header Navigation */}
       <Header activeSection={activeSection} onNavigate={handleNavigate} />
 
@@ -52,7 +57,7 @@ function MainAppContent() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           {/* E-Commerce Product Listing Section */}
-          <section id="products" aria-label="E-Commerce Product Catalog">
+          <section id="products" aria-label="E-Commerce Product Catalog" className={animClass}>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-xl font-extrabold text-white tracking-tight">
@@ -70,8 +75,8 @@ function MainAppContent() {
             />
           </section>
 
-          {/* Optional Recommendations Widget (Defers under DATA SAVER) */}
-          <section id="recommendations" aria-label="Optional Recommendations">
+          {/* Optional Recommendations Widget */}
+          <section id="recommendations" aria-label="Optional Recommendations" className={animClass}>
             <OptionalRecommendations
               products={PRODUCTS}
               onSelectProduct={setSelectedProduct}
@@ -79,12 +84,12 @@ function MainAppContent() {
           </section>
 
           {/* Adaptive Engine Diagnostic Area */}
-          <section id="adaptive-policy" aria-label="Adaptive Policy Diagnostic Area">
+          <section id="adaptive-policy" aria-label="Adaptive Policy Diagnostic Area" className={animClass}>
             <AdaptiveStatus />
           </section>
 
           {/* Hardware & Environment Status Grid */}
-          <section id="environment" aria-label="Environment Detection">
+          <section id="environment" aria-label="Environment Detection" className={animClass}>
             <h2 className="text-lg font-bold text-white mb-4 tracking-tight">
               Environment & Hardware Detection
             </h2>
@@ -95,22 +100,22 @@ function MainAppContent() {
           </section>
 
           {/* Performance Dashboard */}
-          <section id="dashboard" aria-label="Performance Dashboard">
+          <section id="dashboard" aria-label="Performance Dashboard" className={animClass}>
             <PerformanceDashboard metrics={metrics} />
           </section>
 
           {/* Baseline vs Adaptive Benchmark Comparison */}
-          <section id="comparison" aria-label="Performance Comparison">
+          <section id="comparison" aria-label="Performance Comparison" className={animClass}>
             <PerformanceComparison comparisonData={comparison} />
           </section>
 
           {/* Settings & Mode Controls */}
-          <section id="settings" aria-label="Settings Panel">
+          <section id="settings" aria-label="Settings Panel" className={animClass}>
             <SettingsPanel />
           </section>
 
           {/* Adaptation Explanation Panel */}
-          <section id="explanation" aria-label="Adaptation Architecture Explanation">
+          <section id="explanation" aria-label="Adaptation Architecture Explanation" className={animClass}>
             <AdaptationExplanation />
           </section>
         </div>
