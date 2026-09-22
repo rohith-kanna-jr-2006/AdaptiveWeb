@@ -6,21 +6,24 @@ import { useAdaptive } from "@/hooks/useAdaptive";
 import { CANONICAL_MODES } from "@/adaptive/integration/adaptiveAdapter";
 
 /**
- * Reusable small, clear, accessible Adaptive Mode Indicator badge.
- * Displays mode title (AUTO, DATA SAVER, BALANCED, FULL) with icons and text labels.
+ * Reusable Adaptive Mode Indicator badge.
+ * In FULL mode, displays rich animated glowing effects and floating badges.
  */
 export function AdaptiveModeIndicator({ className = "" }) {
-  const { mode, activeMode, isAuto } = useAdaptive();
+  const { activeMode, isAuto } = useAdaptive();
+
+  const isFull = activeMode === CANONICAL_MODES.FULL;
+  const isDataSaver = activeMode === CANONICAL_MODES.DATA_SAVER;
 
   let Icon = ShieldCheck;
   let badgeStyle = "bg-blue-950/80 border-blue-500/50 text-blue-300";
 
-  if (activeMode === CANONICAL_MODES.DATA_SAVER) {
+  if (isDataSaver) {
     Icon = Zap;
     badgeStyle = "bg-amber-950/80 border-amber-500/50 text-amber-300";
-  } else if (activeMode === CANONICAL_MODES.FULL) {
+  } else if (isFull) {
     Icon = Sparkles;
-    badgeStyle = "bg-emerald-950/80 border-emerald-500/50 text-emerald-300";
+    badgeStyle = "bg-emerald-950/90 border-emerald-400/80 text-emerald-200 animate-pulse-glow animate-float-slow";
   }
 
   const titleText = isAuto
@@ -30,12 +33,12 @@ export function AdaptiveModeIndicator({ className = "" }) {
   return (
     <div
       aria-label={`Adaptive Mode: ${titleText}`}
-      className={`inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full border shadow-sm ${badgeStyle} ${className}`}
+      className={`inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full border shadow-sm transition-all duration-300 ${badgeStyle} ${className}`}
     >
       {isAuto ? (
-        <Activity className="w-3.5 h-3.5 text-blue-400 shrink-0" aria-hidden="true" />
+        <Activity className={`w-3.5 h-3.5 text-blue-400 shrink-0 ${isFull ? "animate-spin" : ""}`} aria-hidden="true" />
       ) : (
-        <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+        <Icon className={`w-3.5 h-3.5 shrink-0 ${isFull ? "text-emerald-300" : ""}`} aria-hidden="true" />
       )}
       <span className="font-bold tracking-tight">{titleText}</span>
     </div>
