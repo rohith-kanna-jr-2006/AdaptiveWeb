@@ -1,19 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { adaptiveAdapter } from "@/adaptive/integration/adaptiveAdapter";
+import { adaptiveEngineAdapter } from "@/adapters/adaptiveEngineAdapter";
 import { getUIConfig } from "@/adaptive/config/adaptiveUIConfig";
 
+<<<<<<< HEAD
+=======
 /**
- * Custom React Hook for UI components to consume adaptive engine state.
- * Returns canonical mode ('data-saver' | 'balanced' | 'full'), UI presentation config,
- * environmental metadata, and controls.
+ * Canonical useAdaptive Hook (FORGEX AI 2026)
+ * -------------------------------------------------------------
+ * Usage in UI components:
+ * const { mode, activeMode, isAuto, config, network, reason, setModePreference } = useAdaptive();
+ * 
+ * Flow: Adaptive Runtime -> adaptiveAdapter -> useAdaptive() -> UI
  */
+>>>>>>> 53a99d21d060c9d9604b7ab1bde7ac0043a17b9e
 export function useAdaptive() {
-  const [state, setState] = useState(adaptiveAdapter.getSnapshot());
+  const [state, setState] = useState(adaptiveEngineAdapter.getSnapshot());
 
   useEffect(() => {
-    const unsubscribe = adaptiveAdapter.subscribe((data) => {
+    const unsubscribe = adaptiveEngineAdapter.subscribe((data) => {
       setState(data);
     });
     return () => unsubscribe();
@@ -22,13 +28,13 @@ export function useAdaptive() {
   const config = getUIConfig(state.mode);
 
   const setModePreference = (newMode) => {
-    adaptiveAdapter.setModePreference(newMode);
+    adaptiveEngineAdapter.setModePreference(newMode);
   };
 
   return {
-    mode: state.mode, // Canonical mode: 'data-saver' | 'balanced' | 'full'
+    mode: state.mode,
     rawMode: state.rawMode,
-    config, // Presentation rules from adaptiveUIConfig.js
+    config,
     network: state.network,
     deviceTier: state.deviceTier,
     saveData: state.saveData,
