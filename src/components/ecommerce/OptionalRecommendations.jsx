@@ -1,15 +1,13 @@
 "use client";
 
 import React from "react";
-import { Sparkles, Eye, Info } from "lucide-react";
+import { Sparkles, Info } from "lucide-react";
 import { useAdaptive } from "@/hooks/useAdaptive";
 import { AdaptiveImage } from "@/adaptive/components/AdaptiveImage/AdaptiveImage";
-import { CANONICAL_MODES } from "@/adaptive/integration/adaptiveAdapter";
 
 export function OptionalRecommendations({ products = [], onSelectProduct }) {
   const { config, activeMode } = useAdaptive();
 
-  // If presentation config defers optional recommendations (e.g. DATA SAVER mode), display lightweight notification banner
   if (!config.showOptionalRecommendations) {
     return (
       <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-900/40 text-amber-300 text-xs flex items-center justify-between gap-3">
@@ -64,7 +62,9 @@ export function OptionalRecommendations({ products = [], onSelectProduct }) {
               <h4 className="text-xs font-bold text-white truncate group-hover:text-blue-400 transition-colors">
                 {item.name}
               </h4>
-              <p className="text-xs font-extrabold text-blue-400">${item.price.toFixed(2)}</p>
+              <p className="text-xs font-extrabold text-blue-400">
+                ₹{item.price.toLocaleString("en-IN")}
+              </p>
             </div>
           </div>
         ))}

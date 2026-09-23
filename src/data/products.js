@@ -1,15 +1,14 @@
 /**
- * E-COMMERCE DEMONSTRATION PRODUCT DATASET
+ * E-COMMERCE DEMONSTRATION PRODUCT DATASET (INR CURRENCY)
  * -------------------------------------------------------------
- * Contains products with adaptive image variant URLs (small, medium, large)
- * to demonstrate real policy-driven resource delivery.
+ * Products with realistic INR prices and adaptive image variants (small, medium, large).
  */
 
 export const PRODUCTS = [
   {
     id: "prod-1",
     name: "SonicPro Wireless ANC Headphones",
-    price: 149.99,
+    price: 12499,
     category: "Audio",
     rating: 4.8,
     reviewsCount: 124,
@@ -30,7 +29,7 @@ export const PRODUCTS = [
   {
     id: "prod-2",
     name: "ApexFit Smart Fitness Watch",
-    price: 199.50,
+    price: 16499,
     category: "Wearables",
     rating: 4.7,
     reviewsCount: 89,
@@ -51,7 +50,7 @@ export const PRODUCTS = [
   {
     id: "prod-3",
     name: "UltraBook Pro 15 M-Series",
-    price: 1199.00,
+    price: 99999,
     category: "Laptops",
     rating: 4.9,
     reviewsCount: 210,
@@ -72,7 +71,7 @@ export const PRODUCTS = [
   {
     id: "prod-4",
     name: "LuminaMirror Mirrorless 4K Camera",
-    price: 849.00,
+    price: 69999,
     category: "Cameras",
     rating: 4.6,
     reviewsCount: 64,
@@ -93,7 +92,7 @@ export const PRODUCTS = [
   {
     id: "prod-5",
     name: "PulseBoom Waterproof Outdoor Speaker",
-    price: 79.99,
+    price: 6499,
     category: "Audio",
     rating: 4.7,
     reviewsCount: 145,
@@ -114,7 +113,7 @@ export const PRODUCTS = [
   {
     id: "prod-6",
     name: "ViperStrike Wireless Ergonomic Gaming Mouse",
-    price: 59.99,
+    price: 4999,
     category: "Peripherals",
     rating: 4.8,
     reviewsCount: 178,

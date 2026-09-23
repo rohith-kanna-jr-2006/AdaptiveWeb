@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { X, ShoppingBag, Star, CheckCircle2, ShieldCheck } from "lucide-react";
+import { X, ShoppingBag, Star, CheckCircle2 } from "lucide-react";
 import { AdaptiveImage } from "@/adaptive/components/AdaptiveImage/AdaptiveImage";
 import { useCart } from "@/context/CartContext";
 
@@ -65,7 +65,7 @@ export function ProductDetailsModal({ product, onClose }) {
               </h2>
 
               <div className="text-2xl font-black text-blue-400">
-                ${product.price.toFixed(2)}
+                ₹{product.price.toLocaleString("en-IN")}
               </div>
 
               <p className="text-xs text-slate-300 leading-relaxed">
@@ -104,7 +104,7 @@ export function ProductDetailsModal({ product, onClose }) {
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg"
               >
                 <ShoppingBag className="w-4 h-4" />
-                <span>Add to Cart - ${product.price.toFixed(2)}</span>
+                <span>Add to Cart - ₹{product.price.toLocaleString("en-IN")}</span>
               </button>
             </div>
           </div>

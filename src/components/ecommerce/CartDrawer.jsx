@@ -83,7 +83,7 @@ export function CartDrawer() {
                     {item.name}
                   </h4>
                   <div className="text-xs font-extrabold text-blue-400">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                   </div>
 
                   {/* Quantity Controls */}
@@ -131,7 +131,9 @@ export function CartDrawer() {
             <div className="space-y-1.5 text-xs">
               <div className="flex items-center justify-between text-slate-400">
                 <span>Subtotal</span>
-                <span className="font-semibold text-slate-200">${totalPrice.toFixed(2)}</span>
+                <span className="font-semibold text-slate-200">
+                  ₹{totalPrice.toLocaleString("en-IN")}
+                </span>
               </div>
               <div className="flex items-center justify-between text-slate-400">
                 <span>Estimated Shipping</span>
@@ -139,7 +141,7 @@ export function CartDrawer() {
               </div>
               <div className="flex items-center justify-between text-sm font-extrabold text-white pt-2 border-t border-slate-800">
                 <span>Total</span>
-                <span className="text-blue-400">${totalPrice.toFixed(2)}</span>
+                <span className="text-blue-400">₹{totalPrice.toLocaleString("en-IN")}</span>
               </div>
             </div>
 
