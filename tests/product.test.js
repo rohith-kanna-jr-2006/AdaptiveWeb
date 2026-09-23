@@ -82,6 +82,65 @@ describe('Product API & Optimization Endpoints', () => {
       expect(res.body.error.code).toBe('VALIDATION_ERROR');
       expect(res.body.error.message).toContain('between 1 and 50');
     });
+
+    it('should handle page parameter beyond total available records (e.g. page=999)', async () => {
+      const res = await request(app).get('/api/products?page=999&pageSize=10');
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.products).toEqual([]);
+      expect(res.body.data.pagination).toEqual({
+        totalItems: 30,
+        totalPages: 3,
+        currentPage: 999,
+        pageSize: 10
+      });
+    });
+
+    it('should support pagination boundary limits (pageSize=1 and pageSize=50)', async () => {
+      const resMin = await request(app).get('/api/products?page=1&pageSize=1');
+      expect(resMin.statusCode).toBe(200);
+      expect(resMin.body.data.products.length).toBe(1);
+
+      const resMax = await request(app).get('/api/products?page=1&pageSize=50');
+      expect(resMax.statusCode).toBe(200);
+      expect(resMax.body.data.products.length).toBe(30);
+    });
+
+    it('should reject non-numeric and zero pagination parameters', async () => {
+      const resNonNumeric = await request(app).get('/api/products?page=abc');
+      expect(resNonNumeric.statusCode).toBe(400);
+      expect(resNonNumeric.body.error.code).toBe('VALIDATION_ERROR');
+
+      const resZeroPage = await request(app).get('/api/products?page=0');
+      expect(resZeroPage.statusCode).toBe(400);
+      expect(resZeroPage.body.error.code).toBe('VALIDATION_ERROR');
+
+      const resZeroSize = await request(app).get('/api/products?pageSize=0');
+      expect(resZeroSize.statusCode).toBe(400);
+      expect(resZeroSize.body.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('should return totalPages 0 for empty collection / non-matching filter', async () => {
+      const res = await request(app).get('/api/products?category=NonExistentCategory');
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.products).toEqual([]);
+      expect(res.body.data.pagination).toEqual({
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: 1,
+        pageSize: 10
+      });
+    });
+
+    it('should compressed response payload with gzip when Accept-Encoding gzip header is sent', async () => {
+      const res = await request(app)
+        .get('/api/products')
+        .set('Accept-Encoding', 'gzip');
+
+      expect(res.statusCode).toBe(200);
+      expect(res.headers['content-encoding']).toBe('gzip');
+    });
   });
 
   describe('GET /api/products/:id', () => {

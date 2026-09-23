@@ -26,7 +26,7 @@ const getProducts = async ({ page = 1, pageSize = 10, category }) => {
     Product.countDocuments(filter)
   ]);
 
-  const totalPages = Math.ceil(totalItems / sizeNum) || 1;
+  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / sizeNum);
 
   return {
     products,
