@@ -11,6 +11,9 @@
  */
 
 export const metricsAdapter = {
+  /**
+   * Get initial real measurement values or null.
+   */
   getInitialMetrics() {
     return {
       lcp: null,
@@ -22,6 +25,10 @@ export const metricsAdapter = {
     };
   },
 
+  /**
+   * Retrieve Baseline vs Adaptive comparison data provided by team integration.
+   * Returns null if comparison data has not been provided by backend/test system.
+   */
   getComparisonData() {
     return null;
   },

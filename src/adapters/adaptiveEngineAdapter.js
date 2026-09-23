@@ -3,20 +3,20 @@
  * -------------------------------------------------------------
  * Note: Rohith owns the adaptive engine/policy logic.
  * Frontend components must NOT perform adaptive classification logic.
- * 
+ *
  * This adapter layer standardizes the policy state consumed by the UI.
  * When Rohith's engine module/API is integrated, replace this mock provider
  * with the real engine subscription or API call without altering UI component code.
  */
 
-// Supported Modes
+import { CANONICAL_MODES } from "@/adaptive/integration/adaptiveEngineAdapter";
+
 export const ADAPTIVE_MODES = {
   DATA_SAVER: "DATA SAVER",
   BALANCED: "BALANCED",
   FULL_EXPERIENCE: "FULL EXPERIENCE",
 };
 
-// Mode definitions and descriptions (for ModeCards)
 export const MODE_DESCRIPTIONS = {
   [ADAPTIVE_MODES.DATA_SAVER]: {
     title: "DATA SAVER",
@@ -53,10 +53,6 @@ export const MODE_DESCRIPTIONS = {
   },
 };
 
-/**
- * Temporary mock adaptive engine state supplier.
- * Provides fallback mock data if real engine output is unavailable.
- */
 let currentPolicy = {
   mode: ADAPTIVE_MODES.BALANCED,
   reason: "Moderate connection detected (4G / 8.5 Mbps)",
@@ -78,7 +74,6 @@ export const adaptiveEngineAdapter = {
    */
   subscribe(callback) {
     listeners.add(callback);
-    // Send current state immediately
     callback(currentPolicy);
     return () => listeners.delete(callback);
   },

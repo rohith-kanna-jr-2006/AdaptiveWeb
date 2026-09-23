@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { adaptiveAdapter } from "@/adaptive/integration/adaptiveAdapter";
+import { adaptiveEngineAdapter } from "@/adapters/adaptiveEngineAdapter";
 import { getUIConfig } from "@/adaptive/config/adaptiveUIConfig";
 
+<<<<<<< HEAD
+=======
 /**
  * Canonical useAdaptive Hook (FORGEX AI 2026)
  * -------------------------------------------------------------
@@ -12,29 +14,34 @@ import { getUIConfig } from "@/adaptive/config/adaptiveUIConfig";
  * 
  * Flow: Adaptive Runtime -> adaptiveAdapter -> useAdaptive() -> UI
  */
+>>>>>>> 53a99d21d060c9d9604b7ab1bde7ac0043a17b9e
 export function useAdaptive() {
-  const [state, setState] = useState(adaptiveAdapter.getSnapshot());
+  const [state, setState] = useState(adaptiveEngineAdapter.getSnapshot());
 
   useEffect(() => {
-    const unsubscribe = adaptiveAdapter.subscribe((data) => {
+    const unsubscribe = adaptiveEngineAdapter.subscribe((data) => {
       setState(data);
     });
     return () => unsubscribe();
   }, []);
 
-  const config = getUIConfig(state.activeMode);
+  const config = getUIConfig(state.mode);
+
+  const setModePreference = (newMode) => {
+    adaptiveEngineAdapter.setModePreference(newMode);
+  };
 
   return {
-    mode: state.mode, // User preference: 'auto' | 'data-saver' | 'balanced' | 'full'
-    activeMode: state.activeMode, // Resolved active mode: 'data-saver' | 'balanced' | 'full'
-    isAuto: state.isAuto,
-    config, // Presentation rules from adaptiveUIConfig
+    mode: state.mode,
+    rawMode: state.rawMode,
+    config,
     network: state.network,
+    deviceTier: state.deviceTier,
     saveData: state.saveData,
-    downlink: state.downlink,
     reason: state.reason,
+    isManual: state.isManual,
     isLoading: state.isLoading,
     error: state.error,
-    setModePreference: adaptiveAdapter.setModePreference,
+    setModePreference,
   };
 }
