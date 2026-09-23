@@ -1,6 +1,6 @@
 # AdaptiveWeb Performance Measurement & Benchmark Report
 
-**Generated At:** 2026-09-22T17:51:32.597Z  
+**Generated At:** 2026-09-23T02:03:03.789Z  
 **Environment:** Next.js 14.2.15 | Node.js v24.18.0 | Playwright MS Edge Engine  
 **Git Branch:** `nishaanth/testing`
 
@@ -10,9 +10,9 @@
 
 | Metric | Baseline (Full Experience) | Adaptive (Data Saver) | Efficiency Comparison |
 | :--- | :--- | :--- | :--- |
-| **Page Load Time** | 1662 ms | 1278 ms | **23% faster** |
-| **Loaded Transfer Size** | 471.35 KB | 471.35 KB | **0% payload reduction** |
-| **DOM Tree Size** | 640 nodes | 640 nodes | **0% DOM node reduction** |
+| **Page Load Time** | 1536 ms | 1294 ms | **16% faster** |
+| **Loaded Transfer Size** | 472.21 KB | 476.22 KB | **-1% payload reduction** |
+| **DOM Tree Size** | 646 nodes | 640 nodes | **1% DOM node reduction** |
 
 ---
 
